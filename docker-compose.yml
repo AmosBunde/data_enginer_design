@@ -1,0 +1,53 @@
+version: '3.8'
+
+services:
+  postgres:
+    build: ./postgres
+    container_name: postgres
+    environment:
+      POSTGRES_USER: amos
+      POSTGRES_PASSWORD: irembo24
+      POSTGRES_DB: irembo
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+
+  kafka:
+    build: ./kafka
+    container_name: kafka
+    environment:
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+    ports:
+      - "9092:9092"
+
+  zookeeper:
+    image: wurstmeister/zookeeper
+    container_name: zookeeper
+    ports:
+      - "2181:2181"
+
+  clickhouse:
+    build: ./clickhouse
+    container_name: clickhouse
+    ports:
+      - "8123:8123"
+      - "9000:9000"
+    volumes:
+      - clickhouse_data:/var/lib/clickhouse
+
+  app:
+    build: ./app
+    container_name: app
+    depends_on:
+      - postgres
+      - kafka
+      - clickhouse
+    volumes:
+      - ./app:/app
+
+volumes:
+  postgres_data:
+  clickhouse_data:zookeeper:
