@@ -54,6 +54,21 @@ def CustomerData(cursor, num_customers=1000000):
 
     conn.commit()
 
+def InsertSalesTerritories(cursor, num_territories=100):
+    territories = []
+    for _ in range(num_territories):
+        territories.append((
+            data.country(), data.state(), data.city()
+        ))
+
+    insert_query = """
+    INSERT INTO Sales_Territory (
+        Sales_Territory_Country, Sales_Territory_Region, Sales_Territory_City
+    ) VALUES %s
+    """
+    execute_values(cursor, insert_query, territories)
+    conn.commit()
+
 # Generate and insert employees
 def EmployeeData(cursor, num_employees=1000):
     employees = [(data.name(), data.state()) for _ in range(num_employees)]
@@ -98,6 +113,7 @@ def SalesData(cursor, num_sales=250000000, batch_size=100000):
 
 # Run the data generation and insertion
 CustomerData(cursor)
+InsertSalesTerritories(cursor)
 EmployeeData(cursor)
 SalesData(cursor)
 
