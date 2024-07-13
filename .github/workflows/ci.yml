@@ -51,7 +51,7 @@ jobs:
         username: DOCKER_USERNAME
         password: DOCKER_PASSWORD
         registry: docker.pkg.github.com
-        repository: ${{github.repository}/data_enginer_design
+        repository: ${{github.repository}}/data_enginer_design
 
     - name: Build and push
       run: docker-compose -f docker-compose.yml up --build --exit-code-from app
