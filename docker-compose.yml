@@ -47,7 +47,8 @@ services:
       - clickhouse
     volumes:
       - ./app:/app
-
+    command: ["sh", "appentry.sh"]
 volumes:
   postgres_data:
-  clickhouse_data:zookeeper:
+  clickhouse_data:
+
