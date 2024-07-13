@@ -1,3 +1,11 @@
 FROM wurstmeister/kafka:latest
 
+#Set the env variables
+
+ENV KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://localhost:9092
+ENV KAFKA_LISTENERS=PLAINTEXT://0.0.0.0:9092
+ENV KAFKA_ZOOKEEPER_CONNECT=zookeeper:2181
+
+
+
 
