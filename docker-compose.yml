@@ -10,7 +10,7 @@ services:
     ports:
       - 5432:5432
     healthcheck:
-      test: ["CMD", "pg_isready", "-U", "user"]
+      test: ["CMD", "pg_isready", "-U", "amos"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -38,6 +38,8 @@ services:
 
   clickhouse:
     image: yandex/clickhouse-server
+    build:
+      context: ./clickhouse
     ports:
       - 8123:8123
       - 9000:9000
