@@ -20,12 +20,12 @@ jobs:
           POSTGRES_PASSWORD: irembo24
           POSTGRES_DB: irembo
         ports:
-          - 5433:5432
+          - 5432:5432
 
       zookeeper:
         image: wurstmeister/zookeeper
         ports:
-          - 2182:2181
+          - 2181:2181
 
       kafka:
         image: wurstmeister/kafka
@@ -34,13 +34,13 @@ jobs:
           KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092
           KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
         ports:
-          - 9093:9092
+          - 9092:9092
 
       clickhouse:
         image: yandex/clickhouse-server
         ports:
-          - 8124:8123
-          - 9001:9000
+          - 8123:8123
+          - 9000:9000
 
     steps:
       - name: Checkout code
@@ -84,10 +84,10 @@ jobs:
           docker-compose run postgres sh -c "until pg_isready -U amos; do sleep 1; done"
 
           # Wait for Kafka to be ready
-          docker-compose run kafka sh -c "until nc -z localhost 9093; do sleep 1; done"
+          docker-compose run kafka sh -c "until nc -z localhost 9092; do sleep 1; done"
 
           # Wait for ClickHouse to be ready
-          docker-compose run clickhouse sh -c "until curl -sSf http://localhost:8124/ > /dev/null; do sleep 1; done"
+          docker-compose run clickhouse sh -c "until curl -sSf http://localhost:8123/ > /dev/null; do sleep 1; done"
 
       - name: Run the app
         run: docker-compose -f docker-compose.yml up -d
