@@ -1,4 +1,4 @@
-name: CI/CDPipeline
+name: CI/CD Pipeline
 
 on:
   push:
@@ -26,6 +26,7 @@ jobs:
         image: wurstmeister/zookeeper
         ports:
           - 2181:2181
+
       kafka:
         image: wurstmeister/kafka
         env:
@@ -34,16 +35,13 @@ jobs:
           KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
         ports:
           - 9092:9092
-        
+
       clickhouse:
         image: yandex/clickhouse-server
         ports:
           - 8123:8123
           - 9000:9000
-        volumes:
-          - ./clickhouse-server-logs:/var/log/clickhouse-server/  # Mount ClickHouse server logs
-
-
+        # Remove the volumes section to avoid permission issues
 
     steps:
       - name: Checkout code
@@ -63,8 +61,22 @@ jobs:
       - name: Login to Docker Hub
         run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
 
-      - name: Build and push Docker images
+      - name: Build Docker images
         run: docker-compose -f docker-compose.yml build
+
+      - name: Start services
+        run: docker-compose -f docker-compose.yml up -d
+
+      - name: Wait for services to be ready
+        run: |
+          # Wait for PostgreSQL to be ready
+          docker-compose exec postgres sh -c "until pg_isready -U amos; do sleep 1; done"
+
+          # Wait for Kafka to be ready
+          docker-compose exec kafka sh -c "until nc -z localhost 9092; do sleep 1; done"
+
+          # Wait for ClickHouse to be ready
+          docker-compose exec clickhouse sh -c "until curl -sSf http://localhost:8123/ > /dev/null; do sleep 1; done"
 
       - name: Run the app
         run: docker-compose -f docker-compose.yml up -d
@@ -72,10 +84,13 @@ jobs:
       - name: Run tests
         run: |
           docker-compose exec app sh -c "python -m unittest discover -s tests/"
-
           # Check ClickHouse logs for errors if health check fails (optional)
-          if [[ $(docker logs clickhouse 2>&1 | grep -i error) ]]; then
+          if docker logs clickhouse 2>&1 | grep -i error; then
             echo "ClickHouse container errors detected. See logs for details."
             exit 1
           fi
-          
+
+      - name: Stop and remove containers
+        run: docker-compose down --volumes --remove-orphans
+
+        
