@@ -56,6 +56,15 @@ jobs:
           key: ${{ runner.os }}-buildx-${{ github.sha }}
           restore-keys: |
             ${{ runner.os }}-buildx-
+      - name: Debug Docker Login
+        run: |
+          echo "Docker Username: $DOCKER_USERNAME"
+          echo "Docker Password: $DOCKER_PASSWORD"
+          echo "${DOCKER_PASSWORD}" | docker login -u "${DOCKER_USERNAME}" --password-stdin
+        env:
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+      
 
       - name: Login to Docker Hub
         env:
