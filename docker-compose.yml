@@ -50,4 +50,4 @@ services:
       CLICKHOUSE_HOST: clickhouse
     ports:
       - 8000:8000
-    command: ["python", "generate_and_insert_records.py"]
+    command: ["sh","-c", "python generate_and_insert_records.py && python clickhouse_publisher.py"]

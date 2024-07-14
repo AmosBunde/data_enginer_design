@@ -78,16 +78,20 @@ jobs:
       - name: Start services
         run: docker-compose -f docker-compose.yml up -d
 
+      - name: Output PostgreSQL logs
+        run: docker-compose logs postgres
+      
+
       - name: Wait for services to be ready
         run: |
           # Wait for PostgreSQL to be ready
-          docker-compose run postgres sh -c "until pg_isready -U amos; do sleep 1; done"
+          docker-compose exec postgres sh -c "until pg_isready -U amos; do sleep 1; done"
 
           # Wait for Kafka to be ready
-          docker-compose run kafka sh -c "until nc -z localhost 9092; do sleep 1; done"
+          docker-compose exec kafka sh -c "until nc -z localhost 9092; do sleep 1; done"
 
           # Wait for ClickHouse to be ready
-          docker-compose run clickhouse sh -c "until curl -sSf http://localhost:8123/ > /dev/null; do sleep 1; done"
+          docker-compose exec clickhouse sh -c "until curl -sSf http://localhost:8123/ > /dev/null; do sleep 1; done"
 
       - name: Run the app
         run: docker-compose -f docker-compose.yml up -d
