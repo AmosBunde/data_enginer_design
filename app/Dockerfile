@@ -11,7 +11,7 @@ COPY . .
 
 
 
-COPY run_docker.sh /app/run_docker.sh
+COPY ../scripts/run_docker.sh /app/run_docker.sh
 
 RUN chmod +x /app/run_docker.sh
 
