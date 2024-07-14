@@ -1,4 +1,4 @@
-name: CI/CD Pipeline
+name: CI/CDPipeline
 
 on:
   push:
@@ -17,69 +17,66 @@ jobs:
         image: postgres:13
         env:
           POSTGRES_USER: amos
-          POSTGRES_PASSWORD: password
+          POSTGRES_PASSWORD: irembo24
           POSTGRES_DB: irembo
         ports:
           - 5432:5432
-        options: >-
-          --health-cmd "pg_isready -U amos"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-
+        options:
+          - --health-cmd "pg_isready -U user" --health-interval 10s --health-timeout 5s --health-retries 5
       zookeeper:
         image: wurstmeister/zookeeper
         ports:
           - 2181:2181
-
       kafka:
         image: wurstmeister/kafka
         env:
           KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
-          KAFKA_ZOOKEEPER_CONNECT: localhost:2181
+          KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092
+          KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
         ports:
           - 9092:9092
-        options: >-
-          --health-cmd "curl -f http://localhost:9092"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-
+        options:
+          - --health-cmd "curl -f http://localhost:9092" --health-interval 10s --health-timeout 5s --health-retries 5
       clickhouse:
         image: yandex/clickhouse-server
         ports:
           - 8123:8123
           - 9000:9000
-        options: >-
-          --health-cmd "curl -f http://localhost:8123"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
+        volumes:
+          - ./clickhouse-server-logs:/var/log/clickhouse-server/  # Mount ClickHouse server logs
+        options:
+          - --health-cmd "curl -f http://localhost:8123" --health-interval 10s --health-timeout 5s --health-retries 5
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v2
+      - name: Setup Docker Buildx
+        uses: docker/setup-buildx-action@v2
 
-    - name: Cache Docker layers
-      uses: actions/cache@v3
-      with:
-        path: /tmp/.buildx-cache
-        key: ${{ runner.os }}-buildx-${{ github.sha }}
-        restore-keys: |
-          ${{ runner.os }}-buildx-
+      - name: Cache Docker layers
+        uses: actions/cache@v3
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-
 
-    - name: Log in to Docker Hub
-      run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+      - name: Login to Docker Hub
+        run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
 
-    - name: Build and push Docker images
-      run: docker-compose -f docker-compose.yml build
+      - name: Build and push Docker images
+        run: docker-compose -f docker-compose.yml build
 
-    - name: Run the app
-      run: docker-compose -f docker-compose.yml up -d
+      - name: Run the app
+        run: docker-compose -f docker-compose.yml up -d
 
-    - name: Run tests
-      run: |
-        docker-compose exec app sh -c "python -m unittest discover -s tests"
+      - name: Run tests
+        run: |
+          docker-compose exec app sh -c "python -m unittest discover -s tests/"
+
+          # Check ClickHouse logs for errors if health check fails (optional)
+          if [[ $(docker logs clickhouse 2>&1 | grep -i error) ]]; then
+            echo "ClickHouse container errors detected. See logs for details."
+            exit 1
+          fi
