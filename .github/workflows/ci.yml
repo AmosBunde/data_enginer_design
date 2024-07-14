@@ -42,8 +42,7 @@ jobs:
           - 9000:9000
         volumes:
           - ./clickhouse-server-logs:/var/log/clickhouse-server/  # Mount ClickHouse server logs
-        options:
-          - --health-cmd "curl -f http://localhost:8123" --health-interval 10s --health-timeout 5s --health-retries 5
+
 
     steps:
       - name: Checkout code
