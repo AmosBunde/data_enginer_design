@@ -9,7 +9,7 @@ class TestPushDataToClickhouse(unittest.TestCase):
         # PostgreSQL connection setup
         self.pg_conn = psycopg2.connect(
             host=os.getenv("POSTGRES_HOST", "localhost"),
-            database=os.getenv("POSTGRES_DB", "rembo"),
+            database=os.getenv("POSTGRES_DB", "irembo"),
             user=os.getenv("POSTGRES_USER", "user"),
             password=os.getenv("POSTGRES_PASSWORD", "password")
         )

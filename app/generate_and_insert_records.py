@@ -20,7 +20,7 @@ cursor = conn.cursor()
 data = Faker()
 
 # Generate and insert customers
-def CustomerData(cursor, num_customers=1000000):
+def CustomerData(cursor, num_customers=500000):
     customers = []
     for _ in range(num_customers):
         customers.append((
@@ -54,7 +54,7 @@ def CustomerData(cursor, num_customers=1000000):
 
     conn.commit()
 
-def InsertSalesTerritories(cursor, num_territories=100):
+def InsertSalesTerritories(cursor, num_territories=11):
     territories = []
     for _ in range(num_territories):
         territories.append((
