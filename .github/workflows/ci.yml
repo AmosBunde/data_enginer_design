@@ -41,7 +41,11 @@ jobs:
           - 8123:8123
           - 9000:9000
         volumes:
-          - ./clickhouse-server-logs:/var/log/clickhouse-server/  # Mount ClickHouse server logs
+          - ./clickhouse-server-logs:/var/log/clickhouse-server/  # Mount ClickHouse server logstarget: /home/runner/work/data_enginer_design/data_enginer_design/clickhouse-server-logs
+        options:
+          - create  # Create the directory if it doesn't exist
+          - chmod=755  # Set permissions to 755 (modify, read, execute for owner, read, execute for group, read, execute for others)
+
 
 
     steps:
