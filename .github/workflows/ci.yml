@@ -78,3 +78,4 @@ jobs:
             echo "ClickHouse container errors detected. See logs for details."
             exit 1
           fi
+          
