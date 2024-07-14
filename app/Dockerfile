@@ -3,11 +3,16 @@ FROM python:3.9-slim
 WORKDIR /app
 
 
-COPY . /app
 
 COPY requirements.txt requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
+COPY . .
 
 
-CMD ["python", "generate_and_insert_records.py"]
+
+COPY run_docker.sh /app/run_docker.sh
+
+RUN chmod +x /app/run_docker.sh
+
+CMD ["/app/run_docker.sh"]
