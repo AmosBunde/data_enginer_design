@@ -60,11 +60,11 @@ jobs:
             ${{ runner.os }}-buildx-
 
       - name: Ensure proper permissions
-        run: sudo chmod -R 777 ./clickhouse-server-logs
+        run: sudo chmod -R 777 ./clickhouse-server-logs || true
 
       - name: Clean up logs directory
         run: |
-          sudo rm -rf ./clickhouse-server-logs
+          sudo rm -rf ./clickhouse-server-logs || true
           mkdir -p ./clickhouse-server-logs
 
       - name: Login to Docker Hub
@@ -108,4 +108,5 @@ jobs:
           if [[ $(docker logs clickhouse 2>&1 | grep -i error) ]]; then
             echo "ClickHouse container errors detected. See logs for details."
             exit 1
-          fi
+          fi 
+
