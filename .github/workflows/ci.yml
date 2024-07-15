@@ -59,16 +59,10 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-buildx-
 
-      - name: Ensure proper permissions
-        run: sudo chmod -R 777 ./clickhouse-server-logs || true
-
-      - name: Change ownership to runner user
-        run: sudo chown -R $USER:$USER ./clickhouse-server-logs || true
-
-      - name: Clean up logs directory
+      - name: Ensure proper permissions for logs
         run: |
-          sudo rm -rf ./clickhouse-server-logs || true
-          mkdir -p ./clickhouse-server-logs
+          sudo chown -R $USER:$USER ./clickhouse-server-logs || true
+          sudo chmod -R 777 ./clickhouse-server-logs || true
 
       - name: Login to Docker Hub
         run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
@@ -106,10 +100,22 @@ jobs:
       - name: Run tests
         run: docker-compose run app sh -c "python -m unittest discover -s tests/"
 
+      - name: Clean up ClickHouse logs (optional)
+        run: docker-compose exec clickhouse sh -c "rm -rf /var/log/clickhouse-server/*"
+
       - name: Check ClickHouse logs for errors if health check fails (optional)
         run: |
           if [[ $(docker logs clickhouse 2>&1 | grep -i error) ]]; then
             echo "ClickHouse container errors detected. See logs for details."
             exit 1
-          fi 
+          fi
+
+      - name: Remove ClickHouse log directory
+        run: |
+          sudo rm -rf ./clickhouse-server-logs
+          mkdir ./clickhouse-server-logs
+          sudo chown -R $USER:$USER ./clickhouse-server-logs
+          sudo chmod -R 777 ./clickhouse-server-logs
+
+          
 
