@@ -40,6 +40,46 @@ Data Engineering Systems Design
     
     *   Set up Grafana to visualize the data from ClickHouse.
   
+    data\_enginer\_design/
+
+├── .github/
+
+│ └── workflows/
+
+│ └── ci.yml
+
+├── clickhouse-server-logs/
+
+│ ├── clickhouse-server.err.log
+
+│ └── clickhouse-server.log
+
+├── app/
+
+│ ├── Dockerfile
+
+│ ├── clickhouse\_publisher.py
+
+│ ├── generate\_and\_insert\_records.py
+
+│ ├── requirements.txt
+
+│ └── tests/
+
+│ ├── datapublisher.py
+
+│ └── test\_data\_generate.py
+
+├── docker/
+
+│ ├── Dockerfile.clickhouse
+
+│ └── Dockerfile.postgres
+
+├── docker-compose.yml
+
+└── README.md
+  
 ### Kafka Connect Configuration
 
 Create a Kafka Connect configuration to capture changes from PostgreSQL and stream them to ClickHouse. This involves configuring Kafka Connect with the PostgreSQL source connector and ClickHouse sink connector.
