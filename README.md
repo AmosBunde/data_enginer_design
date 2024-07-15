@@ -81,6 +81,13 @@ data\_enginer\_design/
 ├── docker-compose.yml
 
 └── README.md
+
+````
+Data Engineering Architectural Diagram
+````
+
+![WhatsApp Image 2024-07-15 at 23 14 01](https://github.com/user-attachments/assets/e363fdf8-81ef-45c4-b1fe-c87a32d819bd)
+
   
 ### Kafka Connect Configuration
 
