@@ -62,6 +62,9 @@ jobs:
       - name: Ensure proper permissions
         run: sudo chmod -R 777 ./clickhouse-server-logs || true
 
+      - name: Change ownership to runner user
+        run: sudo chown -R $USER:$USER ./clickhouse-server-logs || true
+
       - name: Clean up logs directory
         run: |
           sudo rm -rf ./clickhouse-server-logs || true
