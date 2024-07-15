@@ -40,7 +40,9 @@ Data Engineering Systems Design
     
     *   Set up Grafana to visualize the data from ClickHouse.
   
-    data\_enginer\_design/
+      
+### Project Tree  
+data\_enginer\_design/
 
 ├── .github/
 
