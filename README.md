@@ -101,3 +101,13 @@ Configure Grafana to connect to ClickHouse and create dashboards for real-time r
 
 This setup will enable real-time data streaming from PostgreSQL to ClickHouse using Kafka, and visualizing the data in Grafana. This approach ensures low latency and real-time insights for Rembo Company’s business needs. The next steps involve implementing each component and ensuring they are correctly integrated to achieve the desired real-time reporting functionality.
 
+
+### Disclaimer and Assumption
+1. The solution is not complete.
+2. The last git action on Postgres services start is main error that is still needs to be debugged.
+3. I didn't initiate the Graphana for Visualization because of point No. 2.
+4. I picked the Conterized service for kafka because of:
+       - It's easy to integrate with clickhouse drivers.
+       - The CDC would be easily introduced to Kafka using Debezium of Table Primary Keys on the Topic.
+5. I understand using Airflow container if feasible but not in the future needs such as CDC and Scalability of the same.(NB; I haven't explored using Kafka on Airflow but that would be another feasible solution.)
+6. Check the git actions to gather my thought processes.
