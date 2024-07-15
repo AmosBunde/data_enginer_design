@@ -1,4 +1,4 @@
-name: CI/CDPipeline
+name: CI/CD Pipeline
 
 on:
   push:
@@ -41,8 +41,6 @@ jobs:
         ports:
           - 8123:8123
           - 9000:9000
-        volumes:
-          - ./clickhouse-server-logs:/var/log/clickhouse-server/
 
     steps:
       - name: Checkout code
@@ -58,64 +56,60 @@ jobs:
           key: ${{ runner.os }}-buildx-${{ github.sha }}
           restore-keys: |
             ${{ runner.os }}-buildx-
-
-      - name: Ensure proper permissions for logs
+      - name: Debug Docker Login
         run: |
-          sudo chown -R $USER:$USER ./clickhouse-server-logs || true
-          sudo chmod -R 777 ./clickhouse-server-logs || true
+          echo "Docker Username: $DOCKER_USERNAME"
+          echo "Docker Password: $DOCKER_PASSWORD"
+          echo "${DOCKER_PASSWORD}" | docker login -u "${DOCKER_USERNAME}" --password-stdin
+        env:
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+      
 
       - name: Login to Docker Hub
-        run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+        env:
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+        run: echo "${DOCKER_PASSWORD}" | docker login -u "${DOCKER_USERNAME}" --password-stdin
 
-      - name: Build and push Docker images
+      - name: Build Docker images
         run: docker-compose -f docker-compose.yml build
+
+      - name: Start services
+        run: docker-compose -f docker-compose.yml up -d
+
+      - name: Output PostgreSQL logs
+        run: docker-compose logs postgres
+      
+
+      - name: Wait for services to be ready
+        run: |
+          # Wait for PostgreSQL to be ready
+          docker-compose run -T postgres sh -c "until pg_isready -U amos; do sleep 1; done"
+
+          # Wait for Kafka to be ready
+          docker-compose run -T kafka sh -c "until nc -z localhost 9092; do sleep 1; done"
+
+          # Wait for ClickHouse to be ready
+          docker-compose run -T clickhouse sh -c "until curl -sSf http://localhost:8123/ > /dev/null; do sleep 1; done"
 
       - name: Run the app
         run: docker-compose -f docker-compose.yml up -d
 
-      - name: Wait for PostgreSQL to be ready
-        run: |
-          echo "Waiting for PostgreSQL to start..."
-          sleep 60
-          until docker-compose exec -T postgres pg_isready -U amos; do sleep 5; done
-        continue-on-error: true
-
-      - name: Check PostgreSQL logs
-        run: docker-compose logs postgres
-
-      - name: Wait for Kafka to be ready
-        run: |
-          echo "Waiting for Kafka to start..."
-          sleep 30
-          until docker-compose exec -T kafka nc -z localhost 9092; do sleep 5; done
-        continue-on-error: true
-
-      - name: Wait for ClickHouse to be ready
-        run: |
-          echo "Waiting for ClickHouse to start..."
-          sleep 30
-          until docker-compose exec -T clickhouse curl -sSf http://localhost:8123/ > /dev/null; do sleep 5; done
-        continue-on-error: true
-
       - name: Run tests
-        run: docker-compose run app sh -c "python -m unittest discover -s tests/"
-
-      - name: Clean up ClickHouse logs (optional)
-        run: docker-compose exec clickhouse sh -c "rm -rf /var/log/clickhouse-server/*"
-
-      - name: Check ClickHouse logs for errors if health check fails (optional)
         run: |
-          if [[ $(docker logs clickhouse 2>&1 | grep -i error) ]]; then
+          docker-compose exec app sh -c "python -m unittest discover -s tests/"
+          # Check ClickHouse logs for errors if health check fails (optional)
+          if docker logs clickhouse 2>&1 | grep -i error; then
             echo "ClickHouse container errors detected. See logs for details."
             exit 1
           fi
 
-      - name: Remove ClickHouse log directory
-        run: |
-          sudo rm -rf ./clickhouse-server-logs
-          mkdir ./clickhouse-server-logs
-          sudo chown -R $USER:$USER ./clickhouse-server-logs
-          sudo chmod -R 777 ./clickhouse-server-logs
+      - name: Stop and remove containers
+        run: docker-compose down --volumes --remove-orphans
 
-          
+
+
+
+
 
