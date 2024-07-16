@@ -83,10 +83,10 @@ data\_enginer\_design/
 └── README.md
 
 ````
-Data Engineering Architectural Diagram
+Data Engineering Architectural Workflows
 ````
 
-![WhatsApp Image 2024-07-15 at 23 14 01](https://github.com/user-attachments/assets/e363fdf8-81ef-45c4-b1fe-c87a32d819bd)
+![Diagram using Graphviz on CLI](https://github.com/user-attachments/assets/e363fdf8-81ef-45c4-b1fe-c87a32d819bd)
 
   
 ### Kafka Connect Configuration
@@ -105,7 +105,7 @@ This setup will enable real-time data streaming from PostgreSQL to ClickHouse us
 ### Disclaimer and Assumption
 1. The solution is not complete.
 2. The last git action on Postgres services start is main error that is still needs to be debugged.
-3. I didn't initiate the Graphana for Visualization because of point No. 2.
+3. I didn't initiate the Graphana/Apache Superset for Visualization because of point No. 2.
 4. I picked the Conterized service for kafka because of:
        - It's easy to integrate with clickhouse drivers.
        - The CDC would be easily introduced to Kafka using Debezium of Table Primary Keys on the Topic.
